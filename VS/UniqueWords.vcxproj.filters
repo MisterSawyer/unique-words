@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\sources\main.cpp" />
+    <ClCompile Include="..\sources\argument-parser\argument-parser.cpp">
+      <Filter>argument-parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\file-loader\file-loader.cpp">
+      <Filter>file-loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\thread-scheduler\thread-scheduler.cpp">
+      <Filter>thread-scheduler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\concurent-set\concurent-set.cpp">
+      <Filter>concurent-set</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\trie\trie.cpp">
+      <Filter>trie</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests\tests.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\pipeline\pipeline.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\utils\utils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="argument-parser">
+      <UniqueIdentifier>{a26ef9bf-0098-4890-8c11-765bbd8ec5a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="concurent-set">
+      <UniqueIdentifier>{b4c8e45d-13f8-4ad1-956c-5e9ed535a667}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="file-loader">
+      <UniqueIdentifier>{81bdc99c-882a-4735-bfdf-824fb93a891c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thread-scheduler">
+      <UniqueIdentifier>{d80ae7c2-8463-45c5-8e6b-2e006c305624}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="trie">
+      <UniqueIdentifier>{b157fcaa-e303-419d-b088-a8dad89f4292}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{44235cce-407d-4450-b318-a727f3de40e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pipeline">
+      <UniqueIdentifier>{5d57c29b-f670-4e0c-8201-2d08ed7bb059}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{78d76eb7-375a-48b9-8745-b16240d6674e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\sources\argument-parser\argument-parser.h">
+      <Filter>argument-parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\concurent-set\concurent-set.h">
+      <Filter>concurent-set</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\file-loader\file-loader.h">
+      <Filter>file-loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\thread-scheduler\thread-scheduler.h">
+      <Filter>thread-scheduler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\trie\trie.h">
+      <Filter>trie</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\tests\tests.h">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\pipeline\pipeline.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\utils\utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
