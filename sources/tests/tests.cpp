@@ -56,13 +56,13 @@ void Test(std::unordered_map<ArgumentType, std::string> args)
 
 std::size_t GetUniqueWordsTrie(const std::string& name)
 {
-	TrieSet<std::string> trie(26);
+	TrieSet<char> trie('a', 26);
 	std::ifstream file(name);
 
 	std::string word;
 	while (file >> word)
 	{
-		trie.Insert(word);
+		trie.Insert(word.data(), word.length());
 	}
 
 	return trie.GetSize();

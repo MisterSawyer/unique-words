@@ -9,9 +9,9 @@ template<class T>
 class ConcurentSet
 {
 public:
-	constexpr ConcurentSet(std::size_t buckets);
-	constexpr void Insert(const T& obj);
-	constexpr std::size_t GetSize() const;
+	ConcurentSet(std::size_t buckets);
+	void Insert(const T& obj);
+	std::size_t GetSize() const;
 private:
 
 	class Bucket
@@ -19,10 +19,10 @@ private:
 	public:
 		Bucket() = default;
 
-		constexpr void Insert(const std::size_t& obj);
-		constexpr void Insert(std::size_t&& obj);
+		void Insert(const std::size_t& obj);
+		void Insert(std::size_t&& obj);
 
-		constexpr std::size_t GetSize() const;
+		std::size_t GetSize() const;
 
 	private:
 		std::mutex m_mutex;
@@ -40,7 +40,7 @@ private:
 };
 
 template<class T>
-constexpr inline ConcurentSet<T>::ConcurentSet(std::size_t buckets)
+inline ConcurentSet<T>::ConcurentSet(std::size_t buckets)
 {
 	if (buckets == 0)buckets = 1;
 
@@ -52,14 +52,14 @@ constexpr inline ConcurentSet<T>::ConcurentSet(std::size_t buckets)
 }
 
 template<class T>
-constexpr inline void ConcurentSet<T>::Insert(const T& obj)
+inline void ConcurentSet<T>::Insert(const T& obj)
 {
 	const auto hashPair = CalculateHash(obj);
 	m_bucketTable[hashPair.first].Insert(hashPair.second);
 }
 
 template<class T>
-constexpr inline std::size_t ConcurentSet<T>::GetSize() const
+inline std::size_t ConcurentSet<T>::GetSize() const
 {
 	std::size_t size = 0;
 	for (const auto & bucket : m_bucketTable)
@@ -80,21 +80,21 @@ inline std::pair<std::size_t, std::size_t> ConcurentSet<T>::CalculateHash(const 
 }
 
 template<class T>
-constexpr inline void ConcurentSet<T>::Bucket::Insert(const std::size_t& obj)
+inline void ConcurentSet<T>::Bucket::Insert(const std::size_t& obj)
 {
 	std::lock_guard lock(m_mutex);
 	m_hashes.insert(obj);
 }
 
 template<class T>
-constexpr inline void ConcurentSet<T>::Bucket::Insert(std::size_t&& obj)
+inline void ConcurentSet<T>::Bucket::Insert(std::size_t&& obj)
 {
 	std::lock_guard lock(m_mutex);
 	m_hashes.insert(std::move(obj));
 }
 
 template<class T>
-constexpr inline std::size_t ConcurentSet<T>::Bucket::GetSize() const
+inline std::size_t ConcurentSet<T>::Bucket::GetSize() const
 {
 	return m_hashes.size();
 }
