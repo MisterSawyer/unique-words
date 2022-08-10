@@ -5,63 +5,99 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <iterator>
 
-/*
-* It turns out that the Trie structure is useless because it's slower than std::unordered_set
-*/
-
-template<class T>
-using Dictionary = std::vector<T>;
-
-template<class Key>
+template<class Key,
+	class Hash = std::hash<Key>, 
+	class SequenceContainer = std::vector<Key>,
+	class KeyEqual = std::equal_to<Key>,
+	class Allocator = std::allocator<std::pair<const Key, std::size_t>>>
 class TrieSet
 {
 public:
+	using allocator_type = Allocator;
 	/*
+	* To use 
 	* Key type must have defined ()++ operator
 	*/
-	TrieSet(const Key & startingKey, const std::size_t & dictionaryLength);
-	explicit TrieSet(const Dictionary<Key> & dictionary);
+	TrieSet(const Key & startingKey, const std::size_t & dictionarySize);
+	explicit TrieSet(const SequenceContainer & dictorinary);
 
+	virtual ~TrieSet();
 
-	void Insert(const std::vector<Key> & key);
-	void Insert(const Key key[], const std::size_t & length);
+	void Insert(const SequenceContainer& sequence);
+	void Insert(const Key sequence[], const std::size_t & sequenceLength);
 
-	bool Contains(const std::vector<Key> & key) const;
-	bool Contains(const Key key[], const std::size_t& length) const;
+	bool Contains(const SequenceContainer& sequence) const;
+	bool Contains(const Key sequence[], const std::size_t& sequenceLength) const;
+
+	bool Empty() const;
+	void Clear();
 
 	std::size_t GetSize() const;
+
+	//---
+	allocator_type GetAllocator() const noexcept;
 private:
 	TrieSet();
 
 	struct Node
 	{
 		Node(const std::size_t & dictionarySize);
-
+		~Node();
 		std::vector<std::unique_ptr<Node>> m_children;
 		bool m_isTerminal;
 	};
-	bool Contains(Node * node, const std::vector<Key>& key) const;
-	bool Contains(Node* node, const Key key[], const std::size_t& length) const;
 
-	void Insert(Node* node, const std::vector<Key> & value);
-	void Insert(Node* node, const Key key[], const std::size_t & length);
+	bool Contains(Node * node, const SequenceContainer& sequence) const;
+	bool Contains(Node* node, const Key sequence[], const std::size_t& sequenceLength) const;
+
+	void Insert(Node* node, const SequenceContainer& value);
+	void Insert(Node* node, const Key sequence[], const std::size_t & sequenceLength);
+
+	Node * TryInsert(Node * node, const Key& value);
 
 	std::unique_ptr<Node> m_root;
 	std::size_t m_dictionarySize;
 	std::size_t m_size;
 
-	std::unordered_map<Key, std::size_t> m_dictionary;
+	std::unordered_map<Key, std::size_t, Hash, KeyEqual, Allocator> m_dictionary;
 };
 
-template<class Key>
-inline TrieSet<Key>::TrieSet()
+/*
+* Node
+*/
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Node::Node(const std::size_t& dictionarySize)
+{
+	m_children.resize(dictionarySize);
+	m_isTerminal = false;
+}
+
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Node::~Node()
+{
+	m_children.clear();
+	m_isTerminal = false;
+}
+
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::allocator_type TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::GetAllocator() const noexcept
+{
+	return m_dictionary.get_allocator();
+}
+
+/*
+* Trie
+*/
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::TrieSet()
 {
 	m_size = 0;
 }
 
-template<class Key>
-inline TrieSet<Key>::TrieSet(const Dictionary<Key>& dictionary)
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::TrieSet(const SequenceContainer& dictionary)
 {
 	for (std::size_t i = 0; i < dictionary.size(); ++i)
 	{
@@ -74,8 +110,14 @@ inline TrieSet<Key>::TrieSet(const Dictionary<Key>& dictionary)
 	m_root = std::make_unique<Node>(m_dictionarySize);
 }
 
-template<class Key>
-inline TrieSet<Key>::TrieSet(const Key& startingKey, const std::size_t & dictionaryLength)
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::~TrieSet()
+{
+	Clear();
+}
+
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::TrieSet(const Key& startingKey, const std::size_t & dictionaryLength)
 {
 	Key k = startingKey;
 	for (std::size_t i = 0; i < dictionaryLength; ++i)
@@ -90,37 +132,26 @@ inline TrieSet<Key>::TrieSet(const Key& startingKey, const std::size_t & diction
 	m_root = std::make_unique<Node>(m_dictionarySize);
 }
 
-template<class Key>
-inline void TrieSet<Key>::Insert(const std::vector<Key> & key)
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline void TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Insert(const SequenceContainer& sequence)
 {
-	Insert(m_root.get(), key);
+	Insert(m_root.get(), sequence);
 }
 
-template<class Key>
-inline void TrieSet<Key>::Insert(const Key key[], const std::size_t& length)
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline void TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Insert(const Key sequence[], const std::size_t& sequenceLength)
 {
-	Insert(m_root.get(), key, length);
+	Insert(m_root.get(), sequence, sequenceLength);
 }
 
-template<class Key>
-inline void TrieSet<Key>::Insert(TrieSet<Key>::Node* node, const std::vector<Key> & key)
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline void TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Insert(TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Node* node, const SequenceContainer & sequence)
 {
 	if (node == nullptr)return;
-	auto it = m_dictionary.end();
 
-	for (const Key & k : key)
+	for (const Key & k : sequence)
 	{
-		it = m_dictionary.find(k);
-
-		if (it == m_dictionary.end())
-		{
-			throw std::out_of_range("Key is not in dictionary");
-		}
-
-		if (node->m_children[it->second] == nullptr) {
-			node->m_children[it->second] = std::make_unique<Node>(m_dictionarySize);
-		}
-		node = node->m_children[it->second].get();
+		node = TryInsert(node, k);
 	}
 
 	if(node->m_isTerminal == false)m_size++;
@@ -128,25 +159,14 @@ inline void TrieSet<Key>::Insert(TrieSet<Key>::Node* node, const std::vector<Key
 	node->m_isTerminal = true;
 }
 
-template<class Key>
-inline void TrieSet<Key>::Insert(Node* node, const Key key[], const std::size_t& length)
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline void TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Insert(Node* node, const Key sequence[], const std::size_t& sequenceLength)
 {
 	if (node == nullptr)return;
-	auto it = m_dictionary.end();
 
-	for (std::size_t i=0; i<length; ++i)
+	for (std::size_t i = 0; i < sequenceLength; ++i)
 	{
-		it = m_dictionary.find(key[i]);
-
-		if (it == m_dictionary.end())
-		{
-			throw std::out_of_range("Key is not in dictionary");
-		}
-
-		if (node->m_children[it->second] == nullptr) {
-			node->m_children[it->second] = std::make_unique<Node>(m_dictionarySize);
-		}
-		node = node->m_children[it->second].get();
+		node = TryInsert(node, sequence[i]);
 	}
 
 	if (node->m_isTerminal == false)m_size++;
@@ -154,31 +174,67 @@ inline void TrieSet<Key>::Insert(Node* node, const Key key[], const std::size_t&
 	node->m_isTerminal = true;
 }
 
-template<class Key>
-inline bool TrieSet<Key>::Contains(const std::vector<Key> & key) const
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Node * TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::TryInsert(Node * node, const Key & value)
 {
-	return Contains(m_root.get(), key);
+	if (node == nullptr)return nullptr;
+
+	auto it = m_dictionary.find(value);
+	if (it == m_dictionary.end())
+	{
+		throw std::out_of_range("Object not in dictionary");
+	}
+
+	std::size_t positionInDictionarySequence = it->second;
+
+	if (node->m_children[positionInDictionarySequence] == nullptr) {
+		node->m_children[positionInDictionarySequence] = std::make_unique<Node>(m_dictionarySize);
+	}
+
+	return node->m_children[positionInDictionarySequence].get();
 }
 
-template<class Key>
-inline bool TrieSet<Key>::Contains(const Key key[], const std::size_t& length) const
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline bool TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Contains(const SequenceContainer& sequence) const
 {
-	return Contains(m_root.get(), key, length);
+	return Contains(m_root.get(), sequence);
 }
 
-template<class Key>
-inline std::size_t TrieSet<Key>::GetSize() const
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline bool TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Contains(const Key sequence[], const std::size_t& sequenceLength) const
+{
+	return Contains(m_root.get(), sequence, sequenceLength);
+}
+
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline bool TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Empty() const
+{
+	return GetSize() == 0;
+}
+
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline void TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Clear()
+{
+	m_root.reset();
+	m_dictionary.clear();
+
+	m_dictionarySize = 0;
+	m_size = 0;
+}
+
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline std::size_t TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::GetSize() const
 {
 	return m_size;
 }
 
-template<class Key>
-inline bool TrieSet<Key>::Contains(Node* node, const std::vector<Key>& key) const
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline bool TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Contains(Node* node, const  SequenceContainer& sequence) const
 {
 	if (node == nullptr)return false;
 	auto it = m_dictionary.end();
 
-	for (const Key& k : key)
+	for (const Key& k : sequence)
 	{
 		it = m_dictionary.find(k);
 
@@ -194,15 +250,15 @@ inline bool TrieSet<Key>::Contains(Node* node, const std::vector<Key>& key) cons
 	return true;
 }
 
-template<class Key>
-inline bool TrieSet<Key>::Contains(Node* node, const Key key[], const std::size_t& length) const
+template<class Key, class Hash, class SequenceContainer, class KeyEqual, class Allocator>
+inline bool TrieSet<Key, Hash, SequenceContainer, KeyEqual, Allocator>::Contains(Node* node, const Key sequence[], const std::size_t& sequenceLength) const
 {
 	if (node == nullptr)return false;
 	auto it = m_dictionary.end();
 
-	for (std::size_t i = 0; i < length; ++i)
+	for (std::size_t i = 0; i < sequenceLength; ++i)
 	{
-		it = m_dictionary.find(key[i]);
+		it = m_dictionary.find(sequence[i]);
 
 		if (it == m_dictionary.end())
 		{
@@ -215,12 +271,4 @@ inline bool TrieSet<Key>::Contains(Node* node, const Key key[], const std::size_
 
 	return true;
 }
-
-template<class Key>
-inline TrieSet<Key>::Node::Node(const std::size_t & dictionarySize)
-{
-	m_children.resize(dictionarySize);
-	m_isTerminal = false;
-}
-
 #endif

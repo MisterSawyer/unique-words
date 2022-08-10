@@ -25,7 +25,7 @@ private:
 		std::size_t GetSize() const;
 
 	private:
-		std::mutex m_mutex;
+		mutable std::mutex m_mutex;
 		std::unordered_set<std::size_t> m_hashes;
 	};
 
@@ -96,6 +96,7 @@ inline void ConcurentSet<T>::Bucket::Insert(std::size_t&& obj)
 template<class T>
 inline std::size_t ConcurentSet<T>::Bucket::GetSize() const
 {
+	std::lock_guard lock(m_mutex);
 	return m_hashes.size();
 }
 #endif // ! CONCURENT_SET_H

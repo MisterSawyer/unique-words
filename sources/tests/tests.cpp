@@ -82,8 +82,6 @@ std::size_t GetUniqueWordsSTD(const std::string& name)
 	return set.size();
 }
 
-
-
 void GenerateTestFile(std::size_t bytes, const std::string& name)
 {
 	std::ofstream file(name);
